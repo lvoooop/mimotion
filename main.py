@@ -191,7 +191,10 @@ def main(_user, _passwd, min_1, max_1):
         return "login fail!"
 
     t = get_time()
-
+    timestamp = time.time()
+    print("当前时间戳1:", timestamp)
+    print("当前时间戳2:", t)
+    
     app_token = get_app_token(login_token)
 
     today = time.strftime("%F")
