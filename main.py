@@ -190,9 +190,9 @@ def main(_user, _passwd, min_1, max_1):
         print("登陆失败！")
         return "login fail!"
 
-    timestamp = get_time()
+     # timestamp = get_time()
     t = time.time()
-    print("当前时间戳1:", timestamp)
+     # print("当前时间戳1:", timestamp)
     print("当前时间戳2:", t)
     
     app_token = get_app_token(login_token)
