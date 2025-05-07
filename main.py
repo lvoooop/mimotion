@@ -187,6 +187,8 @@ def main(_user, _passwd, min_1, max_1):
         print("用户名或密码填写有误！")
         return
     login_token, userid = login(user, password)
+    print("login_token" + login_token)
+    print("userid" + userid)
     if login_token == 0:
         print("登陆失败！")
         return "login fail!"
