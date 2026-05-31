@@ -111,25 +111,51 @@ def get_code(location):
 
 # 登录
 def login(user, password):
-    is_phone = False
-    if re.match(r'\d{11}', user):
-        is_phone = True
-    if is_phone:
-        url1 = "https://api-user.huami.com/registrations/+86" + user + "/tokens"
+# 正则定义
+    email_pattern = r"^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$"
+    phone_pattern = r"^1\d{10}$"
+    phone_with_86_pattern = r"^\+861\d{10}$"
+
+    # 第一步：邮箱 → third_name = "email"
+    if re.fullmatch(email_pattern, user):
+        user = user
+        third_name = "email"
+
+    # 第二步：已带+86的手机号 → third_name = "huami_phone"
+    elif re.fullmatch(phone_with_86_pattern, user):
+        user = user
+        third_name = "huami_phone"
+
+    # 第三步：纯手机号（无+86）→ 补全+86，third_name = "huami_phone"
+    elif re.fullmatch(phone_pattern, user):
+        user = f"+86{user}"
+        third_name = "huami_phone"
+
+    # 其他情况 → 保持原样，third_name = "huami_phone"
     else:
-        url1 = "https://api-user.huami.com/registrations/" + user + "/tokens"
+        user = user
+        third_name = "huami_phone"
+    """返回 (login_token, user_id, app_token) 任意一步失败返回 (0, 0, msg)"""
+    # ---------- 阶段 1：拿 code ----------
+    url1 = f"https://api-user.zepp.com/registrations/{user}/tokens"   # 去空格
     headers = {
-        "Content-Type": "application/x-www-form-urlencoded;charset=UTF-8",
-        "User-Agent": "Mozilla/5.0 (iPhone; CPU iPhone OS 14_7_1 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/14.1.2"
+            "Content-Type": "application/x-www-form-urlencoded; charset=UTF-8",
+            "User-Agent": "MiFit/6.12.0 (MCE16; Android 16; Density/1.5)",
+            "app_name": "com.xiaomi.hm.health"
     }
     data1 = {
-        "client_id": "HuaMi",
-        "password": f"{password}",
-        "redirect_uri": "https://s3-us-west-2.amazonaws.com/hm-registration/successsignin.html",
-        "token": "access"
+            "client_id": "HuaMi",
+            "country_code": "CN",
+            "json_response": "true",
+            "name": user,
+            "password": password,
+            "redirect_uri": "https://s3-us-west-2.amazonaws.com/hm-registration/successsignin.html",
+            "state": "REDIRECTION",
+            "token": "access"
     }
+
     try:
-        r1 = requests.post(url1, data=data1, headers=headers, allow_redirects=False)
+        r1 = requests.post(url1, data=data1, headers=headers, timeout=10, allow_redirects=False)
         if r1.status_code != 200:
             print(f"[登录阶段1] 状态码={r1.status_code} 响应={r1.text}")
             return 0, 0, 0
