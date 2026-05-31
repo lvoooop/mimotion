@@ -110,7 +110,7 @@ def get_code(location):
 
 
 # 登录
-def login(user, password):
+def login(self, user, password):
 # 正则定义
     email_pattern = r"^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$"
     phone_pattern = r"^1\d{10}$"
@@ -170,42 +170,66 @@ def login(user, password):
         return 0, 0, 0
 
     url2 = "https://account.huami.com/v2/client/login"
-    if is_phone:
+    if "+86" in user:
         data2 = {
-            "app_name": "com.xiaomi.hm.health",
-            "app_version": "4.6.0",
-            "code": f"{code}",
-            "country_code": "CN",
-            "device_id": "2C8B4939-0CCD-4E94-8CBA-CB8EA6E613A1",
-            "device_model": "phone",
-            "grant_type": "access_token",
-            "third_name": "huami_phone",
-        }
-    else:
+                "app_name": "com.xiaomi.hm.health",
+                "country_code": "CN",
+                "code": code,
+                "device_id": "2C8B4939-0CCD-4E94-8CBA-CB8EA6E613A1",
+                "device_model": "android_phone",
+                "app_version": "6.12.0",
+                "grant_type": "access_token",
+                "allow_registration": "false",
+                "dn": "account.zepp.com,api-user.zepp.com,api-mifit.zepp.com,api-watch.zepp.com,app-analytics.zepp.com,api-analytics.huami.com,auth.zepp.com",
+                "source": "com.xiaomi.hm.health",
+                "third_name": third_name
+            }
+    elif "@" in user:
         data2 = {
-            "allow_registration": "false",
-            "app_name": "com.xiaomi.hm.health",
-            "app_version": "6.3.5",
-            "code": f"{code}",
-            "country_code": "CN",
-            "device_id": "2C8B4939-0CCD-4E94-8CBA-CB8EA6E613A1",
-            "device_model": "phone",
-            "dn": "api-user.huami.com%2Capi-mifit.huami.com%2Capp-analytics.huami.com",
-            "grant_type": "access_token",
-            "lang": "zh_CN",
-            "os_version": "1.5.0",
-            "source": "com.xiaomi.hm.health",
-            "third_name": "email",
+                "app_name": "com.xiaomi.hm.health",
+                "country_code": "CN",
+                "code": code,
+                "device_id": "2C8B4939-0CCD-4E94-8CBA-CB8EA6E613A1",
+                "device_model": "phone",
+                "app_version": "6.5.5",
+                "grant_type": "access_token",
+                "allow_registration": "false",
+                "dn": "api-user.huami.com,api-mifit.huami.com,app-analytics.huami.com",
+                "source": "com.xiaomi.hm.health",
+                "third_name": third_name,
+                "os_version": "1.5.0",
+                "lang": "zh_CN"
         }
-    r2 = requests.post(url2, data=data2, headers=headers).json()
-    login_token = r2["token_info"]["login_token"]
-    # print("login_token获取成功！")
-    # print(login_token)
-    userid = r2["token_info"]["user_id"]
-    print("userid获取成功！")
-    print(userid)
+    else:  # 兜底
+        data2 = {
+                "app_name": "com.xiaomi.hm.health",
+                "country_code": "CN",
+                "code": code,
+                "device_id": "2C8B4939-0CCD-4E94-8CBA-CB8EA6E613A1",
+                "device_model": "android_phone",
+                "app_version": "6.12.0",
+                "grant_type": "access_token",
+                "allow_registration": "false",
+                "dn": "account.zepp.com,api-user.zepp.com,api-mifit.zepp.com,api-watch.zepp.com,app-analytics.zepp.com,api-analytics.huami.com,auth.zepp.com",
+                "source": "com.xiaomi.hm.health",
+                "third_name": third_name
+        }
 
-    return login_token, userid
+    try:
+        r2 = requests.post(url2, data=data2, headers=headers, timeout=10)
+        if r2.status_code != 200:
+            print(f"[登录阶段2] 状态码={r2.status_code} 响应={r2.text}")
+            return 0, 0, 0
+        info = r2.json()["token_info"]
+        return info["login_token"], info["user_id"], info["app_token"]
+    except Exception as e:
+        print("[登录阶段2] 异常:", e)
+        try:
+            print("响应内容:", r2.text)
+        except:
+            pass
+        print("获取 token 失败")
+        return 0, 0, 0
 
 
 # 主函数
@@ -218,7 +242,7 @@ def main(_user, _passwd, min_1, max_1):
     if user == '' or password == '':
         print("用户名或密码填写有误！")
         return
-    login_token, userid = login(user, password)
+    login_token, userid, apptoken = login(user, password)
     print("login_token" + login_token)
     print("userid" + userid)
     if login_token == 0:
