@@ -129,6 +129,9 @@ def login(user, password):
         "token": "access"
     }
     r1 = requests.post(url1, data=data1, headers=headers, allow_redirects=False)
+    print(f"Status Code: {r1.status_code}")
+print(f"Response Headers: {r1.headers}")
+print(f"Response Body: {r1.text[:500]}")
     location = r1.headers["Location"]
     try:
         code = get_code(location)
