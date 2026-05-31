@@ -110,7 +110,7 @@ def get_code(location):
 
 
 # 登录
-def login(self, user, password):
+def login(user, password):
 # 正则定义
     email_pattern = r"^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$"
     phone_pattern = r"^1\d{10}$"
