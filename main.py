@@ -128,17 +128,20 @@ def login(user, password):
         "redirect_uri": "https://s3-us-west-2.amazonaws.com/hm-registration/successsignin.html",
         "token": "access"
     }
-    r1 = requests.post(url1, data=data1, headers=headers, allow_redirects=False)
-    print(f"Status Code: {r1.status_code}")
-print(f"Response Headers: {r1.headers}")
-print(f"Response Body: {r1.text[:500]}")
-    location = r1.headers["Location"]
     try:
-        code = get_code(location)
-    except:
-        return 0, 0
-    # print("access_code获取成功！")
-    # print(code)
+        r1 = requests.post(url1, data=data1, headers=headers, allow_redirects=False)
+        if r1.status_code != 200:
+            print(f"[登录阶段1] 状态码={r1.status_code} 响应={r1.text}")
+            return 0, 0, 0
+        code = r1.json()["access"]
+    except Exception as e:
+        print("[登录阶段1] 异常:", e)
+        try:
+            print("响应内容:", r1.text)
+        except:
+            pass
+        print("登录失败")
+        return 0, 0, 0
 
     url2 = "https://account.huami.com/v2/client/login"
     if is_phone:
