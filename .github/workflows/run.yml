@@ -6,6 +6,7 @@ on:
   #pull_request:
   #  branches: [ main ]
   schedule:
+  #  配置时间需晚11：30
     - cron: '40 11 * * *'
   watch:
     types: started
