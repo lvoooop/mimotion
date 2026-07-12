@@ -7,7 +7,7 @@ on:
   #  branches: [ main ]
   schedule:
   #  配置时间需晚11：30
-    - cron: '5 11 * * *'
+    - cron: '4 11 * * *'
   watch:
     types: started
   workflow_dispatch:
